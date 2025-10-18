@@ -22,8 +22,11 @@ mongoose.connect(process.env.MONGO_URI)
 //app.use('/api/tasks', tasksRouter);
 
 // Nueva ruta para productos
-const productoRoutes = require('./routes/productos');
-app.use('/api/productos', productoRoutes);
+const productosRoutes = require('./routes/productos');
+const movimientosRoutes = require('./routes/movimientos');
+
+app.use('/api/productos', productosRoutes);
+app.use('/api/movimientos', movimientosRoutes);
 
 
 // Ponemos el servidor a escuchar peticiones
