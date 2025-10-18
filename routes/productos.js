@@ -1,48 +1,77 @@
-// routes/productos.js
 const express = require('express');
 const router = express.Router();
 const Producto = require('../models/producto');
 
-// Obtener todos los productos
-router.get('/', async (req, res) => {
-  try {
-    const productos = await Producto.find();
-    res.json(productos);
-  } catch (error) {
-    res.status(500).json({ mensaje: 'Error al obtener productos', error: error.message });
-  }
-});
-
-// Crear un nuevo producto
+// 🔹 Crear un nuevo producto
 router.post('/', async (req, res) => {
   try {
     const producto = new Producto(req.body);
     await producto.save();
     res.status(201).json(producto);
   } catch (error) {
-    res.status(400).json({ mensaje: 'Error al crear producto', error: error.message });
+    res.status(400).json({ mensaje: 'Error al crear producto', error });
   }
 });
 
-// Actualizar producto
-router.put('/:id', async (req, res) => {
+// 🔹 Obtener todos los productos
+router.get('/', async (req, res) => {
   try {
-    const producto = await Producto.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!producto) return res.status(404).json({ mensaje: 'Producto no encontrado' });
-    res.json(producto);
+    const productos = await Producto.find();
+    res.json(productos);
   } catch (error) {
-    res.status(400).json({ mensaje: 'Error al actualizar producto', error: error.message });
+    res.status(500).json({ mensaje: 'Error al obtener productos', error });
   }
 });
 
-//  Eliminar producto
+// 🔹 Filtrar productos por categoría
+router.get('/categoria/:categoria', async (req, res) => {
+  try {
+    const productos = await Producto.find({ categoria: req.params.categoria });
+    res.json(productos);
+  } catch (error) {
+    res.status(500).json({ mensaje: 'Error al filtrar productos', error });
+  }
+});
+
+// 🔹 Actualizar stock (sumar o restar cantidad)
+router.put('/stock/:id', async (req, res) => {
+  try {
+    const { cantidad } = req.body; // cantidad positiva o negativa
+    const producto = await Producto.findById(req.params.id);
+
+    if (!producto) return res.status(404).json({ mensaje: 'Producto no encontrado' });
+
+    producto.cantidad += cantidad;
+    await producto.save();
+
+    res.json({ mensaje: 'Stock actualizado', producto });
+  } catch (error) {
+    res.status(400).json({ mensaje: 'Error al actualizar stock', error });
+  }
+});
+
+// 🔹 Habilitar o deshabilitar producto
+router.put('/estado/:id', async (req, res) => {
+  try {
+    const { habilitado } = req.body;
+    const producto = await Producto.findByIdAndUpdate(
+      req.params.id,
+      { habilitado },
+      { new: true }
+    );
+    res.json({ mensaje: 'Estado actualizado', producto });
+  } catch (error) {
+    res.status(400).json({ mensaje: 'Error al cambiar estado', error });
+  }
+});
+
+// 🔹 Eliminar producto
 router.delete('/:id', async (req, res) => {
   try {
-    const producto = await Producto.findByIdAndDelete(req.params.id);
-    if (!producto) return res.status(404).json({ mensaje: 'Producto no encontrado' });
+    await Producto.findByIdAndDelete(req.params.id);
     res.json({ mensaje: 'Producto eliminado correctamente' });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al eliminar producto', error: error.message });
+    res.status(500).json({ mensaje: 'Error al eliminar producto', error });
   }
 });
 
