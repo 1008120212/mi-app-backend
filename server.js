@@ -18,8 +18,13 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((err) => console.error('❌ Error de conexión:', err));
 
 // Usamos las rutas definidas en otro archivo
-const tasksRouter = require('./routes/tasks');
-app.use('/api/tasks', tasksRouter);
+//const tasksRouter = require('./routes/tasks');
+//app.use('/api/tasks', tasksRouter);
+
+// Nueva ruta para productos
+const productoRoutes = require('./routes/productos');
+app.use('/api/productos', productoRoutes);
+
 
 // Ponemos el servidor a escuchar peticiones
 app.listen(PORT, () => {
