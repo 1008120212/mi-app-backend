@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Categorías fijas del sistema
 const categoriasValidas = [
   'Bebidas',
   'Alimentos',
@@ -19,16 +18,12 @@ const productoSchema = new mongoose.Schema({
   },
   categoria: {
     type: String,
-    enum: categoriasValidas, // Solo puede elegir de esta lista
+    enum: categoriasValidas,
     required: true
   },
   proveedor: {
     type: String,
     default: 'No especificado'
-  },
-  ubicacion: {
-    type: String,
-    default: 'Almacén principal'
   },
   cantidad: {
     type: Number,
@@ -36,7 +31,8 @@ const productoSchema = new mongoose.Schema({
   },
   minimo: {
     type: Number,
-    default: 5
+    default: 10,
+    immutable: true // no se puede cambiar
   },
   coste: {
     type: Number,
@@ -48,17 +44,22 @@ const productoSchema = new mongoose.Schema({
   },
   habilitado: {
     type: Boolean,
-    default: true // se puede deshabilitar si está en bajo stock
+    default: true
   },
   fechaRegistro: {
     type: Date,
-    default: Date.now // se agrega automáticamente
+    default: Date.now
   }
 });
 
-// Campo virtual para verificar stock bajo
-productoSchema.virtual('alertaStock').get(function() {
-  return this.cantidad <= this.minimo;
+// Deshabilitar producto automáticamente si alcanza el mínimo
+productoSchema.pre('save', function(next) {
+  if (this.cantidad <= this.minimo) {
+    this.habilitado = false;
+  } else {
+    this.habilitado = true;
+  }
+  next();
 });
 
 module.exports = mongoose.model('Producto', productoSchema);

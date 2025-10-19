@@ -33,17 +33,19 @@ router.get('/categoria/:categoria', async (req, res) => {
   }
 });
 
-// 🔹 Actualizar stock (sumar o restar cantidad)
+// 🔹 Actualizar stock (cantidad positiva o negativa)
 router.put('/stock/:id', async (req, res) => {
   try {
-    const { cantidad } = req.body; // cantidad positiva o negativa
+    const { cantidad } = req.body; // cantidad que queremos sumar o restar
     const producto = await Producto.findById(req.params.id);
-
     if (!producto) return res.status(404).json({ mensaje: 'Producto no encontrado' });
 
     producto.cantidad += cantidad;
-    await producto.save();
 
+    // No permitir stock negativo
+    if (producto.cantidad < 0) producto.cantidad = 0;
+
+    await producto.save();
     res.json({ mensaje: 'Stock actualizado', producto });
   } catch (error) {
     res.status(400).json({ mensaje: 'Error al actualizar stock', error });
@@ -62,6 +64,17 @@ router.put('/estado/:id', async (req, res) => {
     res.json({ mensaje: 'Estado actualizado', producto });
   } catch (error) {
     res.status(400).json({ mensaje: 'Error al cambiar estado', error });
+  }
+});
+
+// 🔹 Actualizar datos completos de un producto (Info editable)
+router.put('/editar/:id', async (req, res) => {
+  try {
+    const producto = await Producto.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!producto) return res.status(404).json({ mensaje: 'Producto no encontrado' });
+    res.json({ mensaje: 'Producto actualizado', producto });
+  } catch (error) {
+    res.status(400).json({ mensaje: 'Error al actualizar producto', error });
   }
 });
 
